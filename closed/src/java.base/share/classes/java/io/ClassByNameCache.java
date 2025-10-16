@@ -73,8 +73,7 @@ final class ClassByNameCache {
 
     private void setCanonicalSystemLoaderRef(ClassLoader loader) {
         LoaderRef newKey = new LoaderRef(loader, staleLoaderRefs, true);
-        LoaderRef oldRef = canonicalLoaderRefs.put(newKey, newKey);
-        assert oldRef == null;
+        assert (canonicalLoaderRefs.put(newKey, newKey) == null);
     }
 
     /*
@@ -117,7 +116,6 @@ final class ClassByNameCache {
         Object resultLoaderObj =
             LoaderRef.getLoaderObj(result.getClassLoader());
         if (getCanonicalLoaderRef(resultLoaderObj).isSystem == false) {
-            cache.remove(key);
             return;
         }
 
@@ -158,13 +156,9 @@ final class ClassByNameCache {
             value = createEntry(key.createCacheKey());
         }
 
-        if (value instanceof FutureValue future) {
-            try {
-                return future.get();
-            } catch (ClassNotFoundException e) {
-                cache.remove(key);
-                throw e;
-            }
+        if (value instanceof FutureValue) {
+
+            return ((FutureValue)value).get();
         }
 
         return (Class<?>)value;
